@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+anthropic
+twilio
+supabase
+python-dotenv
+httpx
+python-multipart
