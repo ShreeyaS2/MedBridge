@@ -1,10 +1,71 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn } from '@/lib/auth'
 
-const inp: React.CSSProperties = {width:'100%',background:'rgba(255,255,255,0.07)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',padding:'12px 14px',fontFamily:'DM Sans,sans-serif',fontSize:'0.88rem',color:'var(--paper)',outline:'none'}
-const lbl: React.CSSProperties = {display:'block',fontFamily:'DM Mono,monospace',fontSize:'0.6rem',textTransform:'uppercase',letterSpacing:'0.1em',color:'rgba(245,240,232,0.35)',marginBottom:'6px'}
+/* ─── shared primitives ────────────────────────────────── */
+const GLS_INP: React.CSSProperties = {
+  width: '100%',
+  background: 'rgba(255,255,255,0.07)',
+  border: '1px solid rgba(255,255,255,0.14)',
+  borderRadius: '12px',
+  padding: '13px 16px',
+  fontFamily: 'Plus Jakarta Sans, sans-serif',
+  fontSize: '0.88rem',
+  color: 'rgba(255,255,255,0.95)',
+  outline: 'none',
+  transition: 'border-color 0.2s',
+}
+const LABEL: React.CSSProperties = {
+  display: 'block',
+  fontFamily: 'JetBrains Mono, monospace',
+  fontSize: '0.6rem',
+  textTransform: 'uppercase',
+  letterSpacing: '0.1em',
+  color: 'rgba(255,255,255,0.38)',
+  marginBottom: '7px',
+}
+
+/* ─── EKG SVG hero ──────────────────────────────────────── */
+function EkgHero() {
+  return (
+    <div style={{ position: 'relative', height: '56px', marginBottom: '8px' }}>
+      <svg viewBox="0 0 320 56" fill="none" style={{ width: '100%', height: '100%' }}>
+        <polyline
+          points="0,28 40,28 55,8 65,48 75,18 90,38 100,28 160,28 175,8 185,48 195,18 210,38 220,28 280,28 295,8 305,48 315,18 320,28"
+          stroke="url(#ekg)"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{
+            strokeDasharray: 500,
+            strokeDashoffset: 500,
+            animation: 'ekg 1.8s ease-out forwards',
+          }}
+        />
+        <defs>
+          <linearGradient id="ekg" x1="0" y1="0" x2="320" y2="0" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#FF5A5F" />
+            <stop offset="0.5" stopColor="#A78BFA" />
+            <stop offset="1" stopColor="#00C9A7" />
+          </linearGradient>
+        </defs>
+      </svg>
+      {/* Pulsing heart dot */}
+      <div className="pulsing" style={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%,-50%)',
+        width: '12px',
+        height: '12px',
+        borderRadius: '50%',
+        background: '#FF5A5F',
+        boxShadow: '0 0 16px rgba(255,90,95,0.7)',
+      }} />
+    </div>
+  )
+}
 
 export default function LoginPage() {
   const router = useRouter()
@@ -12,6 +73,17 @@ export default function LoginPage() {
   const [pass, setPass] = useState('')
   const [err, setErr] = useState('')
   const [loading, setLoading] = useState(false)
+  const [time, setTime] = useState('')
+
+  useEffect(() => {
+    const tick = () => {
+      const d = new Date()
+      setTime(d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0'))
+    }
+    tick()
+    const id = setInterval(tick, 30000)
+    return () => clearInterval(id)
+  }, [])
 
   async function handleLogin() {
     setErr('')
@@ -19,52 +91,111 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await signIn(email, pass)
-      router.replace('/home')   // ← use replace, not push
-    }
-    catch (e: any) { setErr(e.message || 'Login failed. Please try again.') }
+      router.replace('/home')
+    } catch (e: any) { setErr(e.message || 'Login failed. Please try again.') }
     finally { setLoading(false) }
   }
 
   return (
-    <div style={{width:'390px',minHeight:'780px',background:'var(--ink)',borderRadius:'48px',padding:'14px',boxShadow:'0 0 0 1px rgba(255,255,255,0.08),0 60px 120px rgba(0,0,0,0.7),inset 0 1px 0 rgba(255,255,255,0.1)',flexShrink:0,display:'flex',flexDirection:'column'}}>
-      <div style={{width:'120px',height:'30px',background:'var(--ink)',borderRadius:'0 0 20px 20px',margin:'0 auto'}} />
-      <div style={{flex:1,background:'var(--ink)',borderRadius:'36px',display:'flex',flexDirection:'column',overflow:'hidden'}}>
+    <div style={{
+      width: '390px', minHeight: '780px',
+      background: '#08061A',
+      borderRadius: '48px',
+      padding: '14px',
+      boxShadow: '0 0 0 1px rgba(255,255,255,0.08), 0 60px 120px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.08)',
+      flexShrink: 0, display: 'flex', flexDirection: 'column',
+      position: 'relative', zIndex: 1,
+    }}>
+      <div style={{ width: '120px', height: '30px', background: '#08061A', borderRadius: '0 0 20px 20px', margin: '0 auto' }} />
 
-        {/* Dark status bar */}
-        <div style={{padding:'12px 24px 8px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-          <span style={{fontFamily:'DM Mono,monospace',fontSize:'0.72rem',fontWeight:500,color:'rgba(245,240,232,0.6)'}}>11:32</span>
-          <span style={{fontSize:'0.65rem',color:'rgba(245,240,232,0.5)',letterSpacing:'2px'}}>▲ ● ●●●</span>
+      <div style={{
+        flex: 1,
+        background: 'linear-gradient(160deg, #0F0C29 0%, #1A1A4E 100%)',
+        borderRadius: '36px',
+        display: 'flex', flexDirection: 'column',
+        overflow: 'hidden', position: 'relative',
+      }}>
+        {/* Glows */}
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+          <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,90,95,0.18) 0%, transparent 70%)' }} />
+          <div style={{ position: 'absolute', bottom: '-60px', left: '-60px', width: '320px', height: '320px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,201,167,0.12) 0%, transparent 70%)' }} />
+        </div>
+
+        {/* Status bar */}
+        <div style={{ padding: '12px 24px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', zIndex: 2 }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: 'rgba(255,255,255,0.6)' }}>{time}</span>
+          <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', letterSpacing: '2px' }}>▲ ● ●●●</span>
         </div>
 
         {/* Hero */}
-        <div style={{padding:'44px 28px 24px',textAlign:'center',position:'relative',overflow:'hidden'}}>
-          <div style={{position:'absolute',top:'-60px',left:'50%',transform:'translateX(-50%)',width:'320px',height:'320px',borderRadius:'50%',background:'radial-gradient(circle,rgba(192,57,43,0.18) 0%,transparent 70%)',pointerEvents:'none'}} />
-          <div style={{fontFamily:'Playfair Display,serif',fontSize:'2.2rem',fontWeight:900,color:'var(--paper)',letterSpacing:'-0.03em',position:'relative',zIndex:1}}>Med<span style={{color:'var(--red-l)'}}>Bridge</span></div>
-          <div style={{fontSize:'0.7rem',color:'rgba(245,240,232,0.35)',marginTop:'6px',fontFamily:'DM Mono,monospace',letterSpacing:'0.1em',textTransform:'uppercase',position:'relative',zIndex:1}}>Post-Discharge Care</div>
-          <div style={{fontSize:'2.8rem',margin:'18px 0 4px',position:'relative',zIndex:1}}>🫀</div>
+        <div style={{ padding: '28px 28px 20px', textAlign: 'center', position: 'relative', zIndex: 2 }}>
+          <div style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '2rem', fontWeight: 800, color: 'rgba(255,255,255,0.95)', letterSpacing: '-0.04em', marginBottom: '4px' }}>
+            Med<span style={{ color: '#FF5A5F', textShadow: '0 0 20px rgba(255,90,95,0.6)' }}>Bridge</span>
+          </div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.14em', color: 'rgba(255,255,255,0.35)', marginBottom: '20px' }}>
+            Post-Discharge Care
+          </div>
+          <EkgHero />
         </div>
 
-        {/* Body */}
-        <div style={{padding:'4px 24px 36px',flex:1,overflowY:'auto'}}>
-          {/* Tabs */}
-          <div style={{display:'flex',background:'rgba(255,255,255,0.07)',borderRadius:'12px',padding:'4px',marginBottom:'22px'}}>
-            <div style={{flex:1,padding:'10px',textAlign:'center',borderRadius:'8px',background:'var(--paper)',color:'var(--ink)',fontSize:'0.82rem',fontWeight:600}}>Sign In</div>
-            <div onClick={() => router.push('/signup')} style={{flex:1,padding:'10px',textAlign:'center',borderRadius:'8px',cursor:'pointer',fontSize:'0.82rem',fontWeight:600,color:'rgba(245,240,232,0.35)'}}>Create Account</div>
+        {/* Form */}
+        <div style={{ padding: '4px 24px 36px', flex: 1, overflowY: 'auto', position: 'relative', zIndex: 2 }}>
+          {/* Tab row */}
+          <div style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '4px', marginBottom: '22px' }}>
+            <div style={{ flex: 1, padding: '10px', textAlign: 'center', borderRadius: '10px', background: 'linear-gradient(135deg,#FF5A5F,#E04449)', boxShadow: '0 0 16px rgba(255,90,95,0.4)', color: '#fff', fontSize: '0.82rem', fontWeight: 700 }}>Sign In</div>
+            <div onClick={() => router.push('/signup')} style={{ flex: 1, padding: '10px', textAlign: 'center', borderRadius: '10px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600, color: 'rgba(255,255,255,0.4)' }}>Create Account</div>
           </div>
 
-          {err && <div style={{background:'rgba(192,57,43,0.15)',border:'1px solid rgba(192,57,43,0.3)',borderRadius:'8px',padding:'10px 12px',fontSize:'0.78rem',color:'#e74c3c',marginBottom:'14px'}}>{err}</div>}
+          {err && (
+            <div style={{ background: 'rgba(255,90,95,0.12)', border: '1px solid rgba(255,90,95,0.3)', borderRadius: '10px', padding: '10px 12px', fontSize: '0.78rem', color: '#FF7B7F', marginBottom: '14px' }}>
+              {err}
+            </div>
+          )}
 
-          <div style={{marginBottom:'13px'}}><label style={lbl}>Email</label><input style={inp} type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleLogin()} /></div>
-          <div style={{marginBottom:'13px'}}><label style={lbl}>Password</label><input style={inp} type="password" placeholder="••••••••" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleLogin()} /></div>
+          <div style={{ marginBottom: '14px' }}>
+            <label style={LABEL}>Email</label>
+            <input style={GLS_INP} type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleLogin()} />
+          </div>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={LABEL}>Password</label>
+            <input style={GLS_INP} type="password" placeholder="••••••••" value={pass} onChange={e => setPass(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleLogin()} />
+          </div>
 
-          <button onClick={handleLogin} disabled={loading} style={{width:'100%',padding:'15px',background:'var(--red)',color:'white',border:'none',borderRadius:'12px',fontFamily:'DM Sans,sans-serif',fontSize:'0.92rem',fontWeight:600,cursor:loading?'not-allowed':'pointer',opacity:loading?0.5:1,marginTop:'6px',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}}>
-            {loading ? 'Signing in…' : 'Sign In →'}
+          <button
+            onClick={handleLogin}
+            disabled={loading}
+            style={{
+              width: '100%', padding: '15px',
+              background: loading ? 'rgba(255,255,255,0.1)' : 'linear-gradient(135deg,#FF5A5F,#E04449)',
+              color: '#fff', border: 'none', borderRadius: '14px',
+              fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '0.92rem', fontWeight: 700,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              boxShadow: loading ? 'none' : '0 0 24px rgba(255,90,95,0.45), 0 4px 16px rgba(255,90,95,0.3)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              transition: 'all 0.2s',
+            }}
+          >
+            {loading
+              ? <><span style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} /> Signing in…</>
+              : 'Sign In →'}
           </button>
-          <div style={{textAlign:'center',fontSize:'0.7rem',color:'rgba(245,240,232,0.18)',margin:'14px 0',fontFamily:'DM Mono,monospace',letterSpacing:'0.06em'}}>— or —</div>
-          <button onClick={() => router.push('/signup')} style={{width:'100%',padding:'15px',background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.12)',borderRadius:'12px',fontFamily:'DM Sans,sans-serif',fontSize:'0.92rem',fontWeight:600,cursor:'pointer',color:'var(--paper)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+
+          <div style={{ textAlign: 'center', fontSize: '0.7rem', color: 'rgba(255,255,255,0.18)', margin: '14px 0', fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.06em' }}>— or —</div>
+
+          <button
+            onClick={() => router.push('/signup')}
+            style={{
+              width: '100%', padding: '14px',
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: '14px',
+              fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '0.88rem', fontWeight: 600,
+              cursor: 'pointer', color: 'rgba(255,255,255,0.75)',
+              transition: 'all 0.2s',
+            }}
+          >
             Create an Account
           </button>
-          <div style={{textAlign:'center',fontSize:'0.7rem',color:'rgba(245,240,232,0.22)',marginTop:'14px',lineHeight:1.5}}>New here? Switch to "Create Account" to register.</div>
         </div>
       </div>
     </div>
