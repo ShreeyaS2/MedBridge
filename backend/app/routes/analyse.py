@@ -17,6 +17,7 @@ async def analyse(req: AnalyseRequest, user_id: str = Depends(get_user_id)):
         "ta": "Respond with English headings and Tamil (தமிழ்) explanations.",
         "hi": "Respond with English headings and Hindi (Devanagari) explanations."
     }
+
     prompt = f"""You are MedBridge. Explain this discharge summary simply for a non-medical patient.
 {lang_map.get(req.language, lang_map['en'])}
 Return ONLY JSON: {{"what_happened":"...","home_care":"...","warning_signs":"...","follow_up":"..."}}
@@ -37,3 +38,38 @@ Discharge summary: {req.text}"""
     }).execute()
 
     return result
+
+
+@router.get("/prescriptions")
+async def get_prescriptions(user_id: str = Depends(get_user_id)):
+    res = supabase.table("prescriptions") \
+        .select("*") \
+        .eq("user_id", user_id) \
+        .order("created_at", desc=True) \
+        .execute()
+    return res.data
+
+
+class ExtractRequest(BaseModel):
+    text: str
+
+@router.post("/prescriptions/extract-and-save")
+async def extract_and_save(req: ExtractRequest, user_id: str = Depends(get_user_id)):
+    rx_prompt = f"""Extract all medications from this discharge summary.
+Return ONLY a JSON array, no other text:
+[{{"drug_name":"...","dosage":"...","frequency":"...","duration":"...","notes":"..."}}]
+If a field is unknown, use null. Discharge summary: {req.text}"""
+
+    rx_response = anthropic.messages.create(
+        model="claude-sonnet-4-20250514",
+        max_tokens=1000,
+        messages=[{"role": "user", "content": rx_prompt}]
+    )
+    prescriptions = json.loads(rx_response.content[0].text.replace("```json","").replace("```","").strip())
+
+    rows = [{"user_id": user_id, "drug_name": p.get("drug_name"), "dosage": p.get("dosage"),
+             "frequency": p.get("frequency"), "duration": p.get("duration"),
+             "notes": p.get("notes"), "source": "discharge_summary", "source_text": req.text}
+            for p in prescriptions]
+    supabase.table("prescriptions").insert(rows).execute()
+    return {"saved": len(rows)}

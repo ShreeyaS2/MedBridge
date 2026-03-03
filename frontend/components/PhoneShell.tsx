@@ -2,7 +2,10 @@
 import { useEffect, useState } from 'react'
 
 export default function PhoneShell({ children }: { children: React.ReactNode }) {
-  const [time, setTime] = useState('')
+    const [time, setTime] = useState(() => {
+  const d = new Date()
+  return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0')
+})
   useEffect(() => {
     const tick = () => {
       const d = new Date()

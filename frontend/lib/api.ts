@@ -43,3 +43,17 @@ export async function saveDrug(drug_name: string) {
   const { error } = await supabase.from('drugs').insert({ user_id: user!.id, drug_name })
   if (error) throw error
 }
+export async function getPrescriptions() {
+  const res = await fetch(`${B}/prescriptions`, { headers: await h() })
+  if (!res.ok) throw new Error('Failed to fetch')
+  return res.json()
+}
+export async function extractAndSavePrescriptions(text: string) {
+  const res = await fetch(`${B}/prescriptions/extract-and-save`, {
+    method: 'POST',
+    headers: await h(),
+    body: JSON.stringify({ text }),
+  })
+  if (!res.ok) throw new Error('Failed to save')
+  return res.json()
+}

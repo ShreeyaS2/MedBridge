@@ -3,9 +3,7 @@ import { useState } from 'react'
 import PhoneShell from '@/components/PhoneShell'
 import BottomNav from '@/components/BottomNav'
 import ScreenHeader from '@/components/ScreenHeader'
-import { analyseDischarge } from '@/lib/api'
-
-const DEMO = 'Pt: Male, 62y. Admitted with NSTEMI. Echo: EF 45%, mild LV dysfunction. Discharged on dual antiplatelet therapy (Aspirin 75mg + Clopidogrel 75mg), ACE inhibitor (Ramipril 2.5mg OD), beta-blocker (Metoprolol 25mg BD), Metformin 500mg BD. Dietary restrictions: low sodium, low fat. F/U cardiology OPD 2 weeks. Avoid strenuous activity for 4 weeks.'
+import { analyseDischarge, extractAndSavePrescriptions } from '@/lib/api'
 
 const SECTIONS = [
   { key: 'what_happened', label: 'What Happened', accent: '#FF5A5F', bg: 'rgba(255,90,95,0.08)' },
@@ -22,36 +20,66 @@ export default function DischargePage() {
   const [hasFile, setHasFile] = useState(false)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [fileName, setFileName] = useState('')
 
   async function analyse() {
     if (!text.trim()) return
-    setLoading(true); setResult(null)
+    setLoading(true); setResult(null); setSaved(false)
     try { setResult(await analyseDischarge(text, lang)) } catch { }
     setLoading(false)
   }
 
+  async function handleSavePrescriptions() {
+    if (!text.trim()) return
+    setSaving(true)
+    try {
+      await extractAndSavePrescriptions(text)
+      setSaved(true)
+    } catch { }
+    setSaving(false)
+  }
+
   return (
     <PhoneShell>
-      <ScreenHeader title="Discharge Explainer" sub="Feature 01 — OCR + LLM" />
+      <ScreenHeader title="Discharge Explainer"/>
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
 
         {/* Upload zone */}
         <div
-          onClick={() => { setHasFile(true); setText(DEMO) }}
+          onClick={() => document.getElementById('file-input')?.click()}
           style={{
             border: `2px ${hasFile ? 'solid' : 'dashed'} ${hasFile ? '#00C9A7' : 'rgba(255,255,255,0.2)'}`,
             borderRadius: '16px', padding: '28px 20px', textAlign: 'center', cursor: 'pointer',
             background: hasFile ? 'rgba(0,201,167,0.07)' : 'rgba(255,255,255,0.04)',
-            transition: 'all 0.3s',
-            backdropFilter: 'blur(12px)',
+            transition: 'all 0.3s', backdropFilter: 'blur(12px)',
           }}
         >
+          <input
+            id="file-input"
+            type="file"
+            accept=".txt"
+            style={{ display: 'none' }}
+            onChange={e => {
+              const file = e.target.files?.[0]
+              if (!file) return
+              const reader = new FileReader()
+              reader.onload = ev => {
+                setText(ev.target?.result as string)
+                setHasFile(true)
+                setFileName(file.name)
+                setSaved(false)
+              }
+              reader.readAsText(file)
+            }}
+          />
           <div style={{ fontSize: '2rem', marginBottom: '10px' }}>{hasFile ? '✅' : '📄'}</div>
           <div style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: 'rgba(255,255,255,0.9)', marginBottom: '6px' }}>
-            {hasFile ? 'discharge_summary.pdf' : 'Upload Discharge Summary'}
+            {hasFile ? fileName : 'Upload Discharge Summary'}
           </div>
           <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)' }}>
-            {hasFile ? 'Apollo Hospitals · Feb 24 2026' : 'Tap to load a demo document'}
+            {hasFile ? 'Tap to upload a different file' : 'Tap to upload a .txt file'}
           </div>
         </div>
 
@@ -79,7 +107,7 @@ export default function DischargePage() {
         {/* Textarea */}
         <textarea
           value={text}
-          onChange={e => setText(e.target.value)}
+          onChange={e => { setText(e.target.value); setSaved(false) }}
           placeholder="Or paste discharge summary text here…"
           style={{
             width: '100%', padding: '13px 16px',
@@ -92,44 +120,65 @@ export default function DischargePage() {
           }}
         />
 
-        {/* Analyse button */}
-        <button
-          onClick={analyse}
-          disabled={loading || !text.trim()}
-          style={{
-            width: '100%', padding: '15px',
-            background: loading || !text.trim() ? 'rgba(255,255,255,0.08)' : 'linear-gradient(135deg,#FF5A5F,#E04449)',
-            color: '#fff', border: 'none', borderRadius: '13px',
-            fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '0.88rem', fontWeight: 700,
-            cursor: loading || !text.trim() ? 'not-allowed' : 'pointer',
-            boxShadow: loading || !text.trim() ? 'none' : '0 0 20px rgba(255,90,95,0.4)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-            transition: 'all 0.2s', opacity: !text.trim() ? 0.5 : 1,
-          }}
-        >
-          {loading
-            ? <><span style={{ width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} /></>
-            : 'Analyse Summary ✦'}
-        </button>
+        {/* Action buttons row */}
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {/* Analyse button */}
+          <button
+            onClick={analyse}
+            disabled={loading || !text.trim()}
+            style={{
+              flex: 1, padding: '15px',
+              background: loading || !text.trim() ? 'rgba(255,255,255,0.08)' : 'linear-gradient(135deg,#FF5A5F,#E04449)',
+              color: '#fff', border: 'none', borderRadius: '13px',
+              fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '0.88rem', fontWeight: 700,
+              cursor: loading || !text.trim() ? 'not-allowed' : 'pointer',
+              boxShadow: loading || !text.trim() ? 'none' : '0 0 20px rgba(255,90,95,0.4)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              transition: 'all 0.2s', opacity: !text.trim() ? 0.5 : 1,
+            }}
+          >
+            {loading
+              ? <span style={{ width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} />
+              : 'Analyse ✦'}
+          </button>
 
-        {/* Results */}
+          {/* Save prescriptions button */}
+          <button
+            onClick={handleSavePrescriptions}
+            disabled={saving || saved || !text.trim()}
+            style={{
+              flex: 1, padding: '15px',
+              background: saved ? 'rgba(0,201,167,0.15)' : saving || !text.trim() ? 'rgba(255,255,255,0.08)' : 'linear-gradient(135deg,#00C9A7,#00A88E)',
+              color: saved ? '#00C9A7' : '#fff',
+              border: saved ? '1px solid #00C9A7' : 'none',
+              borderRadius: '13px',
+              fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '0.82rem', fontWeight: 700,
+              cursor: saving || saved || !text.trim() ? 'not-allowed' : 'pointer',
+              boxShadow: saved || saving || !text.trim() ? 'none' : '0 0 20px rgba(0,201,167,0.3)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+              transition: 'all 0.2s', opacity: !text.trim() ? 0.5 : 1,
+            }}
+          >
+            {saving
+              ? <span style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} />
+              : saved ? '✓ Saved' : '💊 Save Meds'}
+          </button>
+        </div>
+
+        {/* Analysis results */}
         {result && (
           <div className="fade-in" style={{
-            background: 'rgba(255,255,255,0.06)',
-            backdropFilter: 'blur(20px)',
+            background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(20px)',
             border: '1px solid rgba(255,255,255,0.1)',
             borderRadius: '16px', overflow: 'hidden',
           }}>
             {SECTIONS.map((s, i) => (
-              <div
-                key={s.key}
-                style={{
-                  padding: '14px 16px',
-                  borderBottom: i < 3 ? '1px solid rgba(255,255,255,0.07)' : 'none',
-                  borderLeft: `3px solid ${s.accent}`,
-                  background: s.bg,
-                }}
-              >
+              <div key={s.key} style={{
+                padding: '14px 16px',
+                borderBottom: i < 3 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+                borderLeft: `3px solid ${s.accent}`,
+                background: s.bg,
+              }}>
                 <span style={{
                   display: 'inline-block',
                   fontFamily: 'JetBrains Mono, monospace',

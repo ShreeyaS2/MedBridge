@@ -47,7 +47,7 @@ export default function RemindersPage() {
 
   return (
     <PhoneShell>
-      <ScreenHeader title="Reminders & History" sub="Feature 04 — Prescriptions & follow-ups" />
+      <ScreenHeader title="Reminders & History"/>
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 16px' }}>
 
         <div style={SEC}>Today's Medications</div>

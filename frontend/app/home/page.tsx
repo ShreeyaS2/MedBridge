@@ -44,20 +44,28 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        getProfile().then(p => {
-          setProfile(p)
-          getReminders().then(r => setNextMed(r[0] || null)).catch(() => { })
-        }).finally(() => setLoading(false))
-      } else if (event === 'INITIAL_SESSION' && !session) {
-        router.push('/login')
-      }
-    })
-    return () => subscription.unsubscribe()
-  }, [router])
+  const timeout = setTimeout(() => setLoading(false), 5000) // fallback
 
-  if (loading) return null
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'INITIAL_SESSION') {
+      if (!session) { router.replace('/login'); return }
+      Promise.all([
+        getProfile().then(p => setProfile(p)),
+        getReminders().then(r => setNextMed(r.find((x: any) => !x.is_done) || null)).catch(() => {})
+      ]).finally(() => { clearTimeout(timeout); setLoading(false) })
+    }
+  })
+
+  return () => { subscription.unsubscribe(); clearTimeout(timeout) }
+}, [router])
+
+  if (loading) return (
+  <PhoneShell>
+    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.72rem', color: 'rgba(245,240,232,0.25)', letterSpacing: '0.1em' }}>LOADING…</span>
+    </div>
+  </PhoneShell>
+)
 
   return (
     <PhoneShell>

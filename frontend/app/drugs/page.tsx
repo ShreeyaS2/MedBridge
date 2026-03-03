@@ -37,7 +37,7 @@ export default function DrugsPage() {
 
   return (
     <PhoneShell>
-      <ScreenHeader title="Drug Info Lookup" sub="Feature 02 — RAG + OpenFDA" />
+      <ScreenHeader title="Drug Info Lookup"/>
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
 
         {/* Add input row */}

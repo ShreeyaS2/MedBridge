@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import PhoneShell from '@/components/PhoneShell'
 import BottomNav from '@/components/BottomNav'
 import ScreenHeader from '@/components/ScreenHeader'
@@ -22,6 +23,7 @@ const CLS: Record<string, { glow: string; border: string; badgeBg: string; badge
 }
 
 export default function SymptomPage() {
+  const router = useRouter()
   const [symptom, setSymptom] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
@@ -65,7 +67,7 @@ export default function SymptomPage() {
 
   return (
     <PhoneShell>
-      <ScreenHeader title="Symptom Checker" sub="Feature 03 — Not a diagnosis tool" />
+      <ScreenHeader title="Symptom Checker"/>
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', position: 'relative' }}>
 
         {/* Textarea */}
@@ -130,6 +132,25 @@ export default function SymptomPage() {
           {loading
             ? <><span style={{ width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} /></>
             : '✦ Check Symptom'}
+        </button>
+
+        {/* View Prescription History button */}
+        <button
+          onClick={() => router.push('/prescriptions')}
+          style={{
+            width: '100%', padding: '13px',
+            background: 'rgba(255,255,255,0.05)',
+            color: 'rgba(255,255,255,0.6)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '13px',
+            fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '0.82rem', fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+            marginBottom: '8px',
+            transition: 'all 0.2s',
+          }}
+        >
+          💊 View Prescription History
         </button>
 
         {/* Result */}
