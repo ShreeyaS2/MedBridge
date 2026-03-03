@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import PhoneShell from '@/components/PhoneShell'
 import BottomNav from '@/components/BottomNav'
 import { getProfile, signOut } from '@/lib/auth'
 
@@ -29,107 +28,111 @@ export default function ProfilePage() {
   }
 
   return (
-    <PhoneShell>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <div style={{ flex: 1, overflowY: 'auto' }}>
+    <div style={{ width: '430px', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: '96px' }}>
 
-          {/* Profile header */}
+        {/* Profile header */}
+        <div style={{
+          padding: '28px 16px 32px', textAlign: 'center', position: 'relative',
+          background: 'linear-gradient(180deg, rgba(255,90,95,0.12) 0%, transparent 100%)',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+        }}>
+          {/* Avatar */}
           <div style={{
-            padding: '28px 24px 32px', textAlign: 'center', position: 'relative',
-            background: 'linear-gradient(180deg, rgba(255,90,95,0.12) 0%, transparent 100%)',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            width: '72px', height: '72px', borderRadius: '50%',
+            background: 'linear-gradient(135deg,#FF5A5F 0%, #A78BFA 100%)',
+            margin: '0 auto 14px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '1.5rem', fontWeight: 800, color: '#fff',
+            fontFamily: 'Plus Jakarta Sans, sans-serif',
+            boxShadow: '0 0 0 3px rgba(255,90,95,0.25), 0 0 24px rgba(255,90,95,0.3)',
           }}>
-            {/* Avatar */}
-            <div style={{
-              width: '72px', height: '72px', borderRadius: '50%',
-              background: 'linear-gradient(135deg,#FF5A5F 0%, #A78BFA 100%)',
-              margin: '0 auto 14px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '1.5rem', fontWeight: 800, color: '#fff',
-              fontFamily: 'Plus Jakarta Sans, sans-serif',
-              boxShadow: '0 0 0 3px rgba(255,90,95,0.25), 0 0 24px rgba(255,90,95,0.3)',
-            }}>
-              {initials}
-            </div>
-
-            <div style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '1.3rem', fontWeight: 800, color: 'rgba(255,255,255,0.95)' }}>
-              {profile?.fname || '—'}
-            </div>
-            <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.38)', marginTop: '5px' }}>
-              {[profile?.age && `${profile.age} years`, profile?.diagnosis].filter(Boolean).join(' · ') || 'Patient'}
-            </div>
+            {initials}
           </div>
 
-          <div style={{ padding: '0 20px 20px' }}>
-            <div style={SEC}>Account</div>
-
-            <div style={ROW}>
-              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>Name</span>
-              <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.42)', fontFamily: 'JetBrains Mono, monospace' }}>{profile?.fname || '—'}</span>
-            </div>
-            <div style={ROW}>
-              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>Age</span>
-              <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.42)', fontFamily: 'JetBrains Mono, monospace' }}>{profile?.age || '—'}</span>
-            </div>
-            <div style={ROW}>
-              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>Condition</span>
-              <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.42)', fontFamily: 'JetBrains Mono, monospace' }}>{profile?.diagnosis || '—'}</span>
-            </div>
-
-            <div style={SEC}>Doctor on Record</div>
-
-            {/* WhatsApp doctor card */}
-            <div style={{
-              background: 'rgba(37,211,102,0.06)',
-              backdropFilter: 'blur(16px)',
-              border: '1px solid rgba(37,211,102,0.2)',
-              borderLeft: '3px solid #25D366',
-              borderRadius: '12px', padding: '14px 16px', marginBottom: '8px',
-            }}>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#25D366', marginBottom: '5px' }}>
-                WhatsApp Alerts
-              </div>
-              <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'rgba(255,255,255,0.92)' }}>
-                {profile?.doctor_name || 'No doctor added'}
-              </div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', marginTop: '2px' }}>
-                {profile?.doctor_whatsapp || '—'}
-              </div>
-              <div style={{ fontSize: '0.68rem', color: '#25D366', marginTop: '5px' }}>
-                {profile?.doctor_whatsapp ? '✓ WhatsApp notifications active' : 'Add a doctor to enable alerts'}
-              </div>
-            </div>
-
-            <div style={SEC}>App</div>
-            <div style={ROW}>
-              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>Version</span>
-              <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.42)', fontFamily: 'JetBrains Mono, monospace' }}>1.0.0-beta</span>
-            </div>
-            <div style={ROW}>
-              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>Storage</span>
-              <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.42)', fontFamily: 'JetBrains Mono, monospace' }}>Supabase</span>
-            </div>
-
-            <button
-              onClick={logout}
-              style={{
-                width: '100%', padding: '14px',
-                background: 'transparent',
-                color: '#FF7B7F',
-                border: '1px solid rgba(255,90,95,0.3)',
-                borderRadius: '12px',
-                fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '0.88rem', fontWeight: 700,
-                cursor: 'pointer', marginTop: '6px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                transition: 'all 0.2s',
-              }}
-            >
-              🚪 Sign Out
-            </button>
+          <div style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '1.3rem', fontWeight: 800, color: 'rgba(255,255,255,0.95)' }}>
+            {profile?.fname || '—'}
+          </div>
+          <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.38)', marginTop: '5px' }}>
+            {[profile?.age && `${profile.age} years`, profile?.diagnosis].filter(Boolean).join(' · ') || 'Patient'}
           </div>
         </div>
-        <BottomNav />
+
+        <div style={{ padding: '0 12px 20px' }}>
+          <div style={SEC}>Account</div>
+
+          <div style={ROW}>
+            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>Name</span>
+            <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.42)', fontFamily: 'JetBrains Mono, monospace' }}>{profile?.fname || '—'}</span>
+          </div>
+          <div style={ROW}>
+            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>Age</span>
+            <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.42)', fontFamily: 'JetBrains Mono, monospace' }}>{profile?.age || '—'}</span>
+          </div>
+          <div style={ROW}>
+            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>Condition</span>
+            <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.42)', fontFamily: 'JetBrains Mono, monospace' }}>{profile?.diagnosis || '—'}</span>
+          </div>
+
+          <div style={SEC}>Doctor on Record</div>
+
+          {/* WhatsApp doctor card */}
+          <div style={{
+            background: 'rgba(37,211,102,0.06)',
+            backdropFilter: 'blur(16px)',
+            border: '1px solid rgba(37,211,102,0.2)',
+            borderLeft: '3px solid #25D366',
+            borderRadius: '12px', padding: '14px 16px', marginBottom: '8px',
+          }}>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#25D366', marginBottom: '5px' }}>
+              WhatsApp Alerts
+            </div>
+            <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'rgba(255,255,255,0.92)' }}>
+              {profile?.doctor_name || 'No doctor added'}
+            </div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', marginTop: '2px' }}>
+              {profile?.doctor_whatsapp || '—'}
+            </div>
+            <div style={{ fontSize: '0.68rem', color: '#25D366', marginTop: '5px' }}>
+              {profile?.doctor_whatsapp ? '✓ WhatsApp notifications active' : 'Add a doctor to enable alerts'}
+            </div>
+          </div>
+
+          <div style={SEC}>App</div>
+          <div style={ROW}>
+            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>Version</span>
+            <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.42)', fontFamily: 'JetBrains Mono, monospace' }}>1.0.0-beta</span>
+          </div>
+          <div style={ROW}>
+            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>Storage</span>
+            <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.42)', fontFamily: 'JetBrains Mono, monospace' }}>Supabase</span>
+          </div>
+
+          <button
+            onClick={logout}
+            style={{
+              width: '100%', padding: '14px',
+              background: 'transparent',
+              color: '#FF7B7F',
+              border: '1px solid rgba(255,90,95,0.3)',
+              borderRadius: '12px',
+              fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '0.88rem', fontWeight: 700,
+              cursor: 'pointer', marginTop: '6px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              transition: 'all 0.2s',
+            }}
+          >
+            🚪 Sign Out
+          </button>
+        </div>
       </div>
-    </PhoneShell>
+      <BottomNav />
+    </div>
   )
 }
+
+
+
+
+
+

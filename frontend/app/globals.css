@@ -1,6 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 :root {
   /* Base gradient */
@@ -8,48 +14,55 @@
   --bg-to: #1A1A4E;
 
   /* Accent palette */
-  --coral:    #FF5A5F;
-  --coral-d:  #E04449;
-  --teal:     #00C9A7;
+  --coral: #FF5A5F;
+  --coral-d: #E04449;
+  --teal: #00C9A7;
   --lavender: #A78BFA;
-  --amber:    #FBBF24;
-  --mint:     #34D399;
+  --amber: #FBBF24;
+  --mint: #34D399;
   --wa-green: #25D366;
 
   /* Glass surfaces */
-  --glass:        rgba(255,255,255,0.07);
-  --glass-hover:  rgba(255,255,255,0.11);
-  --glass-border: rgba(255,255,255,0.12);
-  --glass-border-strong: rgba(255,255,255,0.2);
+  --glass: rgba(255, 255, 255, 0.07);
+  --glass-hover: rgba(255, 255, 255, 0.11);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-border-strong: rgba(255, 255, 255, 0.2);
 
   /* Text */
-  --text:       rgba(255,255,255,0.95);
-  --text-sub:   rgba(255,255,255,0.55);
-  --text-muted: rgba(255,255,255,0.35);
+  --text: rgba(255, 255, 255, 0.95);
+  --text-sub: rgba(255, 255, 255, 0.55);
+  --text-muted: rgba(255, 255, 255, 0.35);
 
   /* Coral CTA gradient */
   --coral-grad: linear-gradient(135deg, #FF5A5F 0%, #E04449 100%);
-  --coral-glow: 0 0 24px rgba(255,90,95,0.45), 0 4px 16px rgba(255,90,95,0.3);
+  --coral-glow: 0 0 24px rgba(255, 90, 95, 0.45), 0 4px 16px rgba(255, 90, 95, 0.3);
 
   /* Teal */
-  --teal-glow: 0 0 20px rgba(0,201,167,0.35);
+  --teal-glow: 0 0 20px rgba(0, 201, 167, 0.35);
 
   /* Lavender */
   --lavender-grad: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%);
-  --lavender-glow: 0 0 20px rgba(167,139,250,0.4);
+  --lavender-glow: 0 0 20px rgba(167, 139, 250, 0.4);
 }
 
-html, body {
+html,
+body {
   height: 100%;
   font-family: 'Plus Jakarta Sans', sans-serif;
   background: linear-gradient(135deg, var(--bg-from) 0%, var(--bg-to) 100%);
   background-attachment: fixed;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   min-height: 100vh;
-  padding: 20px;
   color: var(--text);
+}
+
+/* Enforce full-width on every page */
+body>* {
+  width: 100%;
+  max-width: 430px;
+  flex-shrink: 0;
 }
 
 /* Subtle grain overlay */
@@ -69,14 +82,19 @@ body::after {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 50% 40% at 90% 5%, rgba(255,90,95,0.15) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 40% at 10% 95%, rgba(0,201,167,0.1) 0%, transparent 70%);
+    radial-gradient(ellipse 50% 40% at 90% 5%, rgba(255, 90, 95, 0.15) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 10% 95%, rgba(0, 201, 167, 0.1) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
 
-* { scrollbar-width: none; }
-*::-webkit-scrollbar { display: none; }
+* {
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
 
 /* Glass utility */
 .glass {
@@ -87,31 +105,134 @@ body::after {
 }
 
 /* Input base */
-input, textarea, select {
+input,
+textarea,
+select {
   font-family: 'Plus Jakarta Sans', sans-serif;
   color: var(--text);
 }
 
-input::placeholder, textarea::placeholder { color: var(--text-muted); }
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* ── Click / tap feedback ─────────────────────────── */
+button {
+  transition: transform 0.12s ease, opacity 0.12s ease, filter 0.12s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+button:active {
+  transform: scale(0.94) !important;
+  opacity: 0.78;
+  filter: brightness(0.95);
+}
+
+/* For div-based clickable elements (cards, nav items) */
+.pressable {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.12s ease;
+}
+
+.pressable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.pressable:active {
+  transform: scale(0.96) !important;
+  opacity: 0.75;
+}
 
 /* Keyframes */
-@keyframes spin     { to { transform: rotate(360deg); } }
-@keyframes slideUp  { from { transform: translateY(100%); } to { transform: translateY(0); } }
-@keyframes fadeIn   { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes popIn    { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
-@keyframes pulse    {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.7; transform: scale(1.06); }
-}
-@keyframes glowPulse {
-  0%, 100% { box-shadow: 0 0 12px rgba(255,90,95,0.3); }
-  50%       { box-shadow: 0 0 28px rgba(255,90,95,0.65); }
-}
-@keyframes ekg {
-  0%   { stroke-dashoffset: 400; }
-  100% { stroke-dashoffset: 0; }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.fade-in  { animation: fadeIn 0.4s ease forwards; }
-.pop-in   { animation: popIn  0.3s ease forwards; }
-.pulsing  { animation: pulse 2s ease-in-out infinite; }
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.7;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes glowPulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 12px rgba(255, 90, 95, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 28px rgba(255, 90, 95, 0.65);
+  }
+}
+
+@keyframes ekg {
+  0% {
+    stroke-dashoffset: 400;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease forwards;
+}
+
+.pop-in {
+  animation: popIn 0.3s ease forwards;
+}
+
+.pulsing {
+  animation: pulse 2s ease-in-out infinite;
+}

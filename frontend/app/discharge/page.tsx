@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react'
-import PhoneShell from '@/components/PhoneShell'
 import BottomNav from '@/components/BottomNav'
 import ScreenHeader from '@/components/ScreenHeader'
 import { analyseDischarge, extractAndSavePrescriptions } from '@/lib/api'
@@ -14,6 +13,25 @@ const SECTIONS = [
 
 const LANGS = [['en', 'English'], ['ta', 'தமிழ்'], ['hi', 'हिंदी']]
 
+async function extractTextFromPdf(file: File): Promise<string> {
+  // Dynamically import pdfjs-dist to keep bundle lean
+  const pdfjsLib = await import('pdfjs-dist')
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+
+  const arrayBuffer = await file.arrayBuffer()
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+  const texts: string[] = []
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i)
+    const content = await page.getTextContent()
+    const pageText = content.items.map((item: any) => item.str).join(' ')
+    texts.push(pageText)
+  }
+
+  return texts.join('\n\n')
+}
+
 export default function DischargePage() {
   const [text, setText] = useState('')
   const [lang, setLang] = useState('en')
@@ -23,6 +41,7 @@ export default function DischargePage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [fileName, setFileName] = useState('')
+  const [pdfExtracting, setPdfExtracting] = useState(false)
 
   async function analyse() {
     if (!text.trim()) return
@@ -41,10 +60,36 @@ export default function DischargePage() {
     setSaving(false)
   }
 
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setHasFile(true)
+    setFileName(file.name)
+    setSaved(false)
+
+    if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+      setPdfExtracting(true)
+      try {
+        const extracted = await extractTextFromPdf(file)
+        setText(extracted)
+      } catch {
+        setText('')
+      }
+      setPdfExtracting(false)
+    } else {
+      // Plain text file
+      const reader = new FileReader()
+      reader.onload = ev => {
+        setText(ev.target?.result as string)
+      }
+      reader.readAsText(file)
+    }
+  }
+
   return (
-    <PhoneShell>
-      <ScreenHeader title="Discharge Explainer"/>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+    <div style={{ width: '430px', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <ScreenHeader title="Discharge Explainer" />
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 0', display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: '96px' }}>
 
         {/* Upload zone */}
         <div
@@ -59,27 +104,18 @@ export default function DischargePage() {
           <input
             id="file-input"
             type="file"
-            accept=".txt"
+            accept=".txt,.pdf,application/pdf"
             style={{ display: 'none' }}
-            onChange={e => {
-              const file = e.target.files?.[0]
-              if (!file) return
-              const reader = new FileReader()
-              reader.onload = ev => {
-                setText(ev.target?.result as string)
-                setHasFile(true)
-                setFileName(file.name)
-                setSaved(false)
-              }
-              reader.readAsText(file)
-            }}
+            onChange={handleFileChange}
           />
-          <div style={{ fontSize: '2rem', marginBottom: '10px' }}>{hasFile ? '✅' : '📄'}</div>
+          <div style={{ fontSize: '2rem', marginBottom: '10px' }}>
+            {pdfExtracting ? '⏳' : hasFile ? '✅' : '📄'}
+          </div>
           <div style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: 'rgba(255,255,255,0.9)', marginBottom: '6px' }}>
-            {hasFile ? fileName : 'Upload Discharge Summary'}
+            {pdfExtracting ? 'Extracting PDF text…' : hasFile ? fileName : 'Upload Discharge Summary'}
           </div>
           <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)' }}>
-            {hasFile ? 'Tap to upload a different file' : 'Tap to upload a .txt file'}
+            {hasFile ? 'Tap to upload a different file' : 'Tap to upload a .txt or .pdf file'}
           </div>
         </div>
 
@@ -125,7 +161,7 @@ export default function DischargePage() {
           {/* Analyse button */}
           <button
             onClick={analyse}
-            disabled={loading || !text.trim()}
+            disabled={loading || !text.trim() || pdfExtracting}
             style={{
               flex: 1, padding: '15px',
               background: loading || !text.trim() ? 'rgba(255,255,255,0.08)' : 'linear-gradient(135deg,#FF5A5F,#E04449)',
@@ -197,6 +233,11 @@ export default function DischargePage() {
 
       </div>
       <BottomNav />
-    </PhoneShell>
+    </div>
   )
 }
+
+
+
+
+

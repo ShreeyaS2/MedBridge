@@ -37,6 +37,15 @@ function StethIcon({ active }: { active: boolean }) {
     </svg>
   )
 }
+function RxIcon({ active }: { active: boolean }) {
+  const c = active ? '#fff' : 'rgba(255,255,255,0.45)'
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" />
+      <path d="M12 12h4M12 16h4M8 12h.01M8 16h.01" />
+    </svg>
+  )
+}
 function BellIcon({ active }: { active: boolean }) {
   const c = active ? '#fff' : 'rgba(255,255,255,0.45)'
   return (
@@ -62,15 +71,22 @@ export default function BottomNav() {
 
   return (
     <div style={{
-      padding: '10px 8px 14px',
+      position: 'fixed',
+      bottom: '12px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      width: 'calc(100% - 24px)',
+      maxWidth: '406px',
+      padding: '8px 6px 10px',
       display: 'flex',
       justifyContent: 'space-around',
-      background: 'rgba(255,255,255,0.06)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      borderTop: '1px solid rgba(255,255,255,0.1)',
-      flexShrink: 0,
-      zIndex: 10,
+      background: 'rgba(15, 12, 40, 0.45)',
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
+      border: '1px solid rgba(255,255,255,0.12)',
+      borderRadius: '28px',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 0 0 0.5px rgba(255,255,255,0.06) inset',
+      zIndex: 100,
     }}>
       {NAV.map(item => {
         const active = pathname === item.path
@@ -79,28 +95,34 @@ export default function BottomNav() {
           <div
             key={item.path}
             onClick={() => router.push(item.path)}
+            className="pressable"
             style={{
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: '4px',
+              gap: '3px',
               cursor: 'pointer',
-              padding: '6px 14px',
+              padding: '6px 8px',
               borderRadius: '20px',
               flex: 1,
               background: active ? '#FF5A5F' : 'transparent',
               boxShadow: active ? '0 0 16px rgba(255,90,95,0.4)' : 'none',
               transition: 'all 0.2s ease',
+              minWidth: 0,
             }}
           >
             <Icon active={active} />
             <span style={{
-              fontSize: '0.52rem',
+              fontSize: '0.46rem',
               fontWeight: 700,
-              letterSpacing: '0.06em',
+              letterSpacing: '0.04em',
               textTransform: 'uppercase',
               color: active ? '#fff' : 'rgba(255,255,255,0.45)',
               fontFamily: 'JetBrains Mono, monospace',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: '100%',
             }}>{item.label}</span>
           </div>
         )
@@ -108,3 +130,4 @@ export default function BottomNav() {
     </div>
   )
 }
+

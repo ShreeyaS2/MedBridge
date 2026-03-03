@@ -1,6 +1,5 @@
 'use client'
 import { useEffect, useState } from 'react'
-import PhoneShell from '@/components/PhoneShell'
 import BottomNav from '@/components/BottomNav'
 import ScreenHeader from '@/components/ScreenHeader'
 import { lookupDrug, getDrugs, saveDrug } from '@/lib/api'
@@ -36,9 +35,9 @@ export default function DrugsPage() {
   ] : []
 
   return (
-    <PhoneShell>
-      <ScreenHeader title="Drug Info Lookup"/>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
+    <div style={{ width: '430px', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <ScreenHeader title="Drug Info Lookup" />
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 12px', paddingBottom: '96px' }}>
 
         {/* Add input row */}
         <div style={{ display: 'flex', gap: '8px', marginBottom: '18px' }}>
@@ -139,6 +138,11 @@ export default function DrugsPage() {
         )}
       </div>
       <BottomNav />
-    </PhoneShell>
+    </div>
   )
 }
+
+
+
+
+

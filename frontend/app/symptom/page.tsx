@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import PhoneShell from '@/components/PhoneShell'
 import BottomNav from '@/components/BottomNav'
 import ScreenHeader from '@/components/ScreenHeader'
 import { checkSymptom, notifyDoctor, getDrugs } from '@/lib/api'
@@ -66,9 +65,9 @@ export default function SymptomPage() {
   const t = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0')
 
   return (
-    <PhoneShell>
-      <ScreenHeader title="Symptom Checker"/>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', position: 'relative' }}>
+    <div style={{ width: '430px', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <ScreenHeader title="Symptom Checker" />
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 12px', paddingBottom: '96px', position: 'relative' }}>
 
         {/* Textarea */}
         <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.38)', marginBottom: '8px' }}>
@@ -253,6 +252,11 @@ export default function SymptomPage() {
         )}
       </div>
       <BottomNav />
-    </PhoneShell>
+    </div>
   )
 }
+
+
+
+
+
