@@ -38,26 +38,14 @@ export default function DischargePage() {
   const [hasFile, setHasFile] = useState(false)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
   const [fileName, setFileName] = useState('')
   const [pdfExtracting, setPdfExtracting] = useState(false)
 
   async function analyse() {
     if (!text.trim()) return
-    setLoading(true); setResult(null); setSaved(false)
+    setLoading(true); setResult(null);
     try { setResult(await analyseDischarge(text, lang)) } catch { }
     setLoading(false)
-  }
-
-  async function handleSavePrescriptions() {
-    if (!text.trim()) return
-    setSaving(true)
-    try {
-      await extractAndSavePrescriptions(text)
-      setSaved(true)
-    } catch { }
-    setSaving(false)
   }
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -65,7 +53,6 @@ export default function DischargePage() {
     if (!file) return
     setHasFile(true)
     setFileName(file.name)
-    setSaved(false)
 
     if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
       setPdfExtracting(true)
@@ -109,7 +96,7 @@ export default function DischargePage() {
             onChange={handleFileChange}
           />
           <div style={{ fontSize: '2rem', marginBottom: '10px' }}>
-            {pdfExtracting ? '⏳' : hasFile ? '✅' : '📄'}
+            {pdfExtracting ? '⏳' : hasFile ? '✅' : ''}
           </div>
           <div style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: 'rgba(255,255,255,0.9)', marginBottom: '6px' }}>
             {pdfExtracting ? 'Extracting PDF text…' : hasFile ? fileName : 'Upload Discharge Summary'}
@@ -143,7 +130,7 @@ export default function DischargePage() {
         {/* Textarea */}
         <textarea
           value={text}
-          onChange={e => { setText(e.target.value); setSaved(false) }}
+          onChange={e => { setText(e.target.value) }}
           placeholder="Or paste discharge summary text here…"
           style={{
             width: '100%', padding: '13px 16px',
@@ -156,7 +143,6 @@ export default function DischargePage() {
           }}
         />
 
-        {/* Action buttons row */}
         <div style={{ display: 'flex', gap: '8px' }}>
           {/* Analyse button */}
           <button
@@ -176,28 +162,6 @@ export default function DischargePage() {
             {loading
               ? <span style={{ width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} />
               : 'Analyse ✦'}
-          </button>
-
-          {/* Save prescriptions button */}
-          <button
-            onClick={handleSavePrescriptions}
-            disabled={saving || saved || !text.trim()}
-            style={{
-              flex: 1, padding: '15px',
-              background: saved ? 'rgba(0,201,167,0.15)' : saving || !text.trim() ? 'rgba(255,255,255,0.08)' : 'linear-gradient(135deg,#00C9A7,#00A88E)',
-              color: saved ? '#00C9A7' : '#fff',
-              border: saved ? '1px solid #00C9A7' : 'none',
-              borderRadius: '13px',
-              fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '0.82rem', fontWeight: 700,
-              cursor: saving || saved || !text.trim() ? 'not-allowed' : 'pointer',
-              boxShadow: saved || saving || !text.trim() ? 'none' : '0 0 20px rgba(0,201,167,0.3)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-              transition: 'all 0.2s', opacity: !text.trim() ? 0.5 : 1,
-            }}
-          >
-            {saving
-              ? <span style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} />
-              : saved ? '✓ Saved' : '💊 Save Meds'}
           </button>
         </div>
 

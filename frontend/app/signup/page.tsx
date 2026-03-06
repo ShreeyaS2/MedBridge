@@ -14,11 +14,6 @@ const GLS_INP: React.CSSProperties = {
   color: 'rgba(255,255,255,0.95)',
   outline: 'none',
 }
-const WA_INP: React.CSSProperties = {
-  ...GLS_INP,
-  borderLeft: '3px solid #25D366',
-  background: 'rgba(37,211,102,0.06)',
-}
 const LABEL: React.CSSProperties = {
   display: 'block',
   fontFamily: 'JetBrains Mono, monospace',
@@ -99,8 +94,8 @@ export default function SignupPage() {
           { k: 'doctorNum', t: 'tel', l: "Doctor's WhatsApp number", ph: '+91 98765 43210', ws: true },
         ].map(({ k, t, l, ph, ws }) => (
           <div key={k} style={{ marginBottom: '12px' }}>
-            <label style={ws ? { ...LABEL, color: 'rgba(37,211,102,0.7)' } : LABEL}>{l}</label>
-            <input style={ws ? WA_INP : GLS_INP} type={t} placeholder={ph} value={(f as any)[k]} onChange={e => set(k, e.target.value)} />
+            <label style={LABEL}>{l}</label>
+            <input style={GLS_INP} type={t} placeholder={ph} value={(f as any)[k]} onChange={e => set(k, e.target.value)} />
           </div>
         ))}
 
@@ -115,16 +110,13 @@ export default function SignupPage() {
             cursor: loading ? 'not-allowed' : 'pointer',
             boxShadow: loading ? 'none' : '0 0 24px rgba(255,90,95,0.4)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-            marginTop: '4px',
+            marginTop: '30px',
           }}
         >
           {loading
             ? <><span style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} /> Creating account…</>
             : 'Create Account →'}
         </button>
-        <div style={{ textAlign: 'center', fontSize: '0.68rem', color: 'rgba(255,255,255,0.2)', marginTop: '14px', lineHeight: 1.5 }}>
-          Your data is stored securely via Supabase.
-        </div>
       </div>
     </div>
   )

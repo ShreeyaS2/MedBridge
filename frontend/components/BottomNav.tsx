@@ -5,8 +5,8 @@ const NAV = [
   { label: 'Home', path: '/home', icon: HomeIcon },
   { label: 'Discharge', path: '/discharge', icon: DocIcon },
   { label: 'Symptoms', path: '/symptom', icon: StethIcon },
+  { label: 'Prescriptions', path: '/prescriptions', icon: RxIcon },
   { label: 'Reminders', path: '/reminders', icon: BellIcon },
-  { label: 'Profile', path: '/profile', icon: PersonIcon },
 ]
 
 function HomeIcon({ active }: { active: boolean }) {

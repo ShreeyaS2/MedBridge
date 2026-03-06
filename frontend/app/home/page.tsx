@@ -27,15 +27,6 @@ const CARDS = [
   },
   {
     icon: '💊',
-    title: 'Drug Info',
-    desc: 'Look up any medication for plain-language dosage and interaction info.',
-    path: '/drugs',
-    grad: 'linear-gradient(135deg, rgba(0,201,167,0.25) 0%, rgba(0,201,167,0.05) 100%)',
-    border: 'rgba(0,201,167,0.3)',
-    accent: '#00C9A7',
-  },
-  {
-    icon: '📋',
     title: 'Prescription History',
     desc: 'View and manage your full prescription history over time.',
     path: '/prescriptions',
@@ -92,32 +83,36 @@ export default function HomePage() {
       >
         {/* Header */}
         <div style={{ padding: '20px 24px 20px', position: 'relative' }}>
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.38)', marginBottom: '4px' }}>
-            Welcome back
-          </div>
-          <div style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '1.65rem', fontWeight: 800, color: 'rgba(255,255,255,0.95)', marginBottom: '2px', letterSpacing: '-0.03em' }}>
-            {profile?.fname || '—'}
-          </div>
-          <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.42)', marginBottom: '14px' }}>
-            {profile?.diagnosis || 'Post-discharge care'}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.62rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.38)', marginBottom: '4px' }}>
+                Welcome back
+              </div>
+              <div style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '1.65rem', fontWeight: 800, color: 'rgba(255,255,255,0.95)', marginBottom: '2px', letterSpacing: '-0.03em' }}>
+                {profile?.fname || '—'}
+              </div>
+            </div>
+
+            <button
+              onClick={() => router.push('/profile')}
+              title="Profile"
+              style={{
+                width: '38px', height: '38px', borderRadius: '50%',
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'rgba(255,255,255,0.8)', transition: 'all 0.2s',
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="7" r="4" />
+                <path d="M4 21v-1a8 8 0 0116 0v1" />
+              </svg>
+            </button>
           </div>
 
           {/* Header row: recovery badge + floating notif when scrolled */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            {/* Pulsing recovery badge */}
-            <div className="pulsing" style={{
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
-              background: 'rgba(255,90,95,0.15)',
-              border: '1px solid rgba(255,90,95,0.35)',
-              padding: '5px 12px', borderRadius: '20px',
-              fontFamily: 'JetBrains Mono, monospace',
-              fontSize: '0.6rem', color: '#FF7B7F',
-              boxShadow: '0 0 12px rgba(255,90,95,0.25)',
-            }}>
-              🫀 Recovery mode
-            </div>
-
-            {/* Floating notification badge — appears when scrolled past cards */}
             <div
               onClick={() => router.push('/reminders')}
               style={{

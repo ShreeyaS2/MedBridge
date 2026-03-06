@@ -50,6 +50,30 @@ export default function ScreenHeader({ title, sub, back = '/home' }: { title: st
           }}>{sub}</div>
         )}
       </div>
+      <div style={{ flex: 1 }} />
+      <button
+        onClick={() => router.push('/profile')}
+        title="Profile"
+        style={{
+          width: '34px',
+          height: '34px',
+          borderRadius: '50%',
+          background: 'rgba(255,255,255,0.08)',
+          border: '1px solid rgba(255,255,255,0.15)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'rgba(255,255,255,0.8)',
+          flexShrink: 0,
+          transition: 'all 0.2s',
+        }}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="7" r="4" />
+          <path d="M4 21v-1a8 8 0 0116 0v1" />
+        </svg>
+      </button>
     </div>
   )
 }

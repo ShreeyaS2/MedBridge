@@ -130,7 +130,7 @@ export default function DrugsPage() {
                   </div>
                 ))}
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(0,201,167,0.1)', border: '1px solid rgba(0,201,167,0.25)', padding: '5px 12px', borderRadius: '20px', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: '#00C9A7' }}>
-                  ✓ Sourced from OpenFDA via RAG
+                  ✓ Sourced from OpenFDA
                 </div>
               </>
             )}

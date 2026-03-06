@@ -93,19 +93,6 @@ export default function ProfilePage() {
             <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', marginTop: '2px' }}>
               {profile?.doctor_whatsapp || '—'}
             </div>
-            <div style={{ fontSize: '0.68rem', color: '#25D366', marginTop: '5px' }}>
-              {profile?.doctor_whatsapp ? '✓ WhatsApp notifications active' : 'Add a doctor to enable alerts'}
-            </div>
-          </div>
-
-          <div style={SEC}>App</div>
-          <div style={ROW}>
-            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>Version</span>
-            <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.42)', fontFamily: 'JetBrains Mono, monospace' }}>1.0.0-beta</span>
-          </div>
-          <div style={ROW}>
-            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>Storage</span>
-            <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.42)', fontFamily: 'JetBrains Mono, monospace' }}>Supabase</span>
           </div>
 
           <button
@@ -117,12 +104,12 @@ export default function ProfilePage() {
               border: '1px solid rgba(255,90,95,0.3)',
               borderRadius: '12px',
               fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '0.88rem', fontWeight: 700,
-              cursor: 'pointer', marginTop: '6px',
+              cursor: 'pointer', marginTop: '35px',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               transition: 'all 0.2s',
             }}
           >
-            🚪 Sign Out
+             Sign Out
           </button>
         </div>
       </div>

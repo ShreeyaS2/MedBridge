@@ -23,11 +23,14 @@ const CLS: Record<string, { glow: string; border: string; badgeBg: string; badge
 
 export default function SymptomPage() {
   const router = useRouter()
+  // Symptom state
   const [symptom, setSymptom] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
   const [drugs, setDrugs] = useState<string[]>([])
+
+  // Action state
   const [modal, setModal] = useState(false)
   const [sent, setSent] = useState(false)
   const [sentTime, setSentTime] = useState('')
@@ -38,6 +41,7 @@ export default function SymptomPage() {
     getDrugs().then(d => setDrugs(d.map((x: any) => x.drug_name))).catch(() => { })
   }, [])
 
+  // Symptom actions
   async function classify() {
     if (!symptom.trim()) return
     setLoading(true); setResult(null); setSent(false)
@@ -130,7 +134,7 @@ export default function SymptomPage() {
         >
           {loading
             ? <><span style={{ width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} /></>
-            : '✦ Check Symptom'}
+            : ' Check Symptom'}
         </button>
 
         {/* View Prescription History button */}
@@ -149,7 +153,7 @@ export default function SymptomPage() {
             transition: 'all 0.2s',
           }}
         >
-          💊 View Prescription History
+           View Prescription History
         </button>
 
         {/* Result */}
@@ -173,7 +177,7 @@ export default function SymptomPage() {
               {result.explanation} {result.action}
             </div>
             <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)', lineHeight: 1.5, paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-              ⚠️ This is not a medical diagnosis. Always contact your doctor if unsure.
+               This is not a medical diagnosis. Always contact your doctor if unsure.
             </div>
             {profile?.doctor_whatsapp && (
               <button
@@ -233,7 +237,7 @@ export default function SymptomPage() {
               </div>
               <div
                 style={{ background: '#DCF8C6', borderRadius: '12px 12px 0 12px', padding: '12px 14px', fontSize: '0.76rem', lineHeight: 1.6, color: '#1A1A1A', marginBottom: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}
-                dangerouslySetInnerHTML={{ __html: `<strong>Hi Dr. ${docLast},</strong><br><br>Your patient <strong>${profile?.fname} (${profile?.age}, ${profile?.diagnosis})</strong> has reported a symptom via MedBridge.<br><br><strong>Symptom:</strong> "${symptom}"<br><strong>Classification:</strong> ${result?.classification}${drugs.length ? `<br><strong>Medications:</strong> ${drugs.join(', ')}` : ''}  <br><br>Please follow up when convenient.<br><br>— MedBridge` }}
+                dangerouslySetInnerHTML={{ __html: `<strong>Hi Dr. ${docLast},</strong><br><br>Your patient <strong>${profile?.fname} (${profile?.age}, ${profile?.diagnosis})</strong> has reported a symptom via MedBridge.<br><br><strong>Symptom:</strong> "${symptom}"<br><strong>Classification:</strong> ${result?.classification}  <br><br>Please follow up when convenient.<br><br>— MedBridge` }}
               />
               <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', textAlign: 'right', marginBottom: '14px', fontFamily: 'JetBrains Mono, monospace' }}>MedBridge · {t}</div>
               <button

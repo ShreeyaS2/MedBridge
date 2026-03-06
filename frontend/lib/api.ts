@@ -22,12 +22,27 @@ export async function notifyDoctor(p: { symptom_text: string; classification: st
 }
 export async function getReminders() {
   const today = new Date().toISOString().split('T')[0]
-  const { data, error } = await supabase.from('reminders').select('*').eq('date', today).order('time_of_day')
+  const { data, error } = await supabase.from('reminders')
+    .select('*')
+    .gte('date', today)
+    .order('date')
+    .order('time_of_day')
   if (error) throw error; return data || []
 }
-export async function addReminder(drug_name: string, dose: string, time_of_day: string) {
+export async function addReminder(drug_name: string, dose: string, time_of_day: string, date?: string) {
   const { data: { user } } = await supabase.auth.getUser()
-  const { error } = await supabase.from('reminders').insert({ user_id: user!.id, drug_name, dose, time_of_day })
+  const today = new Date().toISOString().split('T')[0]
+  const { error } = await supabase.from('reminders').insert({ user_id: user!.id, drug_name, dose, time_of_day, date: date || today })
+  if (error) throw error
+}
+export async function deleteReminder(id: string) {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+  const { error } = await supabase
+    .from('reminders')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id)
   if (error) throw error
 }
 export async function toggleReminder(id: string, is_done: boolean) {
