@@ -1,8 +1,8 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import BottomNav from '@/components/BottomNav'
 import ScreenHeader from '@/components/ScreenHeader'
-import { getPrescriptions, deletePrescription, getDrugs, saveDrug, lookupDrug } from '@/lib/api'
+import { getPrescriptions, deletePrescription, getDrugs, saveDrug, lookupDrug, parseVisitPrescription } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
 
 type Prescription = {
@@ -45,6 +45,24 @@ const LBL: React.CSSProperties = {
   color: 'rgba(255,255,255,0.35)', marginBottom: '6px', display: 'block',
 }
 
+async function extractTextFromPdf(file: File): Promise<string> {
+  const pdfjsLib = await import('pdfjs-dist')
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`
+
+  const arrayBuffer = await file.arrayBuffer()
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+  const texts: string[] = []
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i)
+    const content = await page.getTextContent()
+    const pageText = content.items.map((item: any) => (item as any).str).join(' ')
+    texts.push(pageText)
+  }
+
+  return texts.join('\n\n')
+}
+
 export default function PrescriptionsPage() {
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([])
   const [loading, setLoading] = useState(true)
@@ -60,7 +78,9 @@ export default function PrescriptionsPage() {
   const [patientAge, setPatientAge] = useState('')
   const [reason, setReason] = useState('')
   const [doctorName, setDoctorName] = useState('')
-  const [prescriptionDate, setPrescriptionDate] = useState('')
+  const prescriptionDateRef = useRef<HTMLInputElement>(null)
+  const editDateRef = useRef<HTMLInputElement>(null)
+  const [prescriptionDate, setPrescriptionDate] = useState(new Date().toISOString().split('T')[0])
   const [numMedicines, setNumMedicines] = useState('1')
 
   // Step 2
@@ -78,6 +98,7 @@ export default function PrescriptionsPage() {
   const [viewingData, setViewingData] = useState<{ id: string, visit: VisitPrescription, created_at: string } | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [savingEdit, setSavingEdit] = useState(false)
+  const [extracting, setExtracting] = useState(false)
 
   // Tabs state
   const [activeTab, setActiveTab] = useState<'history' | 'lookup'>('history')
@@ -164,6 +185,7 @@ export default function PrescriptionsPage() {
     setAdding(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
+
       const visitData: VisitPrescription = {
         patientName, patientAge, reasonForVisit: reason, doctorName, prescriptionDate, medicines: validMeds
       }
@@ -190,6 +212,44 @@ export default function PrescriptionsPage() {
       load()
     } catch { }
     setSavingEdit(false)
+  }
+
+  async function handlePDFToForm() {
+    if (!selectedFile) return
+    setExtracting(true)
+    try {
+      const text = await extractTextFromPdf(selectedFile)
+      const data = await parseVisitPrescription(text)
+
+      // Populate form
+      setPatientName(data.patientName || '')
+      setPatientAge(data.patientAge || '')
+      setReason(data.reasonForVisit || '')
+      setDoctorName(data.doctorName || '')
+      setPrescriptionDate(data.prescriptionDate || new Date().toISOString().split('T')[0])
+
+      const meds = data.medicines || []
+      if (meds.length > 0) {
+        setMedicines(meds.map((m: any) => ({
+          drug_name: m.drug_name || '',
+          dosage: m.dosage || '',
+          frequency: m.frequency || '',
+          duration: m.duration || '',
+          notes: m.notes || ''
+        })))
+        setNumMedicines(meds.length.toString())
+      } else {
+        setNumMedicines('1')
+        setMedicines([{ drug_name: '', dosage: '', frequency: '', duration: '', notes: '' }])
+      }
+
+      setShowForm(true)
+      setFormStep(1)
+      setSelectedFile(null)
+    } catch (e) {
+      console.error(e)
+    }
+    setExtracting(false)
   }
 
   type ParsedPrescriptionType = Prescription & {
@@ -326,12 +386,21 @@ export default function PrescriptionsPage() {
                     <span style={{ color: '#fff', fontSize: '0.85rem', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {selectedFile.name}
                     </span>
-                    <button style={{
-                      padding: '8px 16px', background: '#00C9A7', color: '#fff', border: 'none',
-                      borderRadius: '10px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer',
-                      boxShadow: '0 0 10px rgba(0,201,167,0.2)'
-                    }}>
-                      Add to prescriptions
+                    <button
+                      onClick={handlePDFToForm}
+                      disabled={extracting}
+                      style={{
+                        padding: '8px 16px', background: '#00C9A7', color: '#fff', border: 'none',
+                        borderRadius: '10px', fontSize: '0.75rem', fontWeight: 700, cursor: extracting ? 'not-allowed' : 'pointer',
+                        boxShadow: '0 0 10px rgba(0,201,167,0.2)',
+                        display: 'flex', alignItems: 'center', gap: '6px'
+                      }}>
+                      {extracting ? (
+                        <>
+                          <span style={{ width: '12px', height: '12px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} />
+                          Extracting...
+                        </>
+                      ) : 'Add to prescriptions'}
                     </button>
                     <button
                       onClick={() => setSelectedFile(null)}
@@ -467,7 +536,39 @@ export default function PrescriptionsPage() {
                       </div>
                       <div style={{ flex: 1 }}>
                         <label style={LBL}>Date</label>
-                        <input style={GLS} type="date" value={prescriptionDate} onChange={e => setPrescriptionDate(e.target.value)} />
+                        <div
+                          style={{ position: 'relative', cursor: 'pointer' }}
+                          onClick={() => {
+                            try {
+                              prescriptionDateRef.current?.showPicker()
+                            } catch (e) {
+                              prescriptionDateRef.current?.click()
+                            }
+                          }}
+                        >
+                          <input
+                            style={GLS}
+                            type="text"
+                            readOnly
+                            value={formatDate(prescriptionDate)}
+                          />
+                          <input
+                            ref={prescriptionDateRef}
+                            type="date"
+                            style={{
+                              position: 'absolute',
+                              opacity: 0,
+                              inset: 0,
+                              width: '100%',
+                              height: '100%',
+                              cursor: 'pointer',
+                              colorScheme: 'dark',
+                              pointerEvents: 'none'
+                            }}
+                            value={prescriptionDate}
+                            onChange={e => setPrescriptionDate(e.target.value)}
+                          />
+                        </div>
                       </div>
                     </div>
                     <div style={{ marginBottom: '12px' }}>
@@ -684,7 +785,7 @@ export default function PrescriptionsPage() {
                       </div>
                     ))}
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(0,201,167,0.1)', border: '1px solid rgba(0,201,167,0.25)', padding: '5px 12px', borderRadius: '20px', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.58rem', color: '#00C9A7' }}>
-                      ✓ Sourced from OpenFDA via RAG
+                      Sourced from OpenFDA
                     </div>
                   </>
                 )}
@@ -718,7 +819,7 @@ export default function PrescriptionsPage() {
             )}
           </div>
 
-          <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '20px', paddingBottom: '100px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {/* Visit Details */}
             <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '16px', padding: '16px', border: '1px solid rgba(255,255,255,0.08)' }}>
               <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: '#00C9A7', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>Visit Info</div>
@@ -741,7 +842,39 @@ export default function PrescriptionsPage() {
                   <div style={{ flex: 1 }}>
                     <label style={LBL}>Date</label>
                     {isEditing ? (
-                      <input style={GLS} type="date" value={viewingData.visit.prescriptionDate} onChange={e => setViewingData({ ...viewingData, visit: { ...viewingData.visit, prescriptionDate: e.target.value } })} />
+                      <div
+                        style={{ position: 'relative', cursor: 'pointer' }}
+                        onClick={() => {
+                          try {
+                            editDateRef.current?.showPicker()
+                          } catch (e) {
+                            editDateRef.current?.click()
+                          }
+                        }}
+                      >
+                        <input
+                          style={GLS}
+                          type="text"
+                          readOnly
+                          value={formatDate(viewingData.visit.prescriptionDate || '')}
+                        />
+                        <input
+                          ref={editDateRef}
+                          type="date"
+                          style={{
+                            position: 'absolute',
+                            opacity: 0,
+                            inset: 0,
+                            width: '100%',
+                            height: '100%',
+                            cursor: 'pointer',
+                            colorScheme: 'dark',
+                            pointerEvents: 'none'
+                          }}
+                          value={viewingData.visit.prescriptionDate || ''}
+                          onChange={e => setViewingData({ ...viewingData, visit: { ...viewingData.visit, prescriptionDate: e.target.value } })}
+                        />
+                      </div>
                     ) : <div style={{ color: '#fff', fontSize: '0.9rem' }}>{viewingData.visit.prescriptionDate ? formatDate(viewingData.visit.prescriptionDate) : '-'}</div>}
                   </div>
                 </div>

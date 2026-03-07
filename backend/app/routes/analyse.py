@@ -83,3 +83,33 @@ async def delete_prescription(id: str, user_id: str = Depends(get_user_id)):
         .eq("user_id", user_id) \
         .execute()
     return {"deleted": id}
+
+
+class ParseVisitRequest(BaseModel):
+    text: str
+
+@router.post("/prescriptions/parse-visit")
+async def parse_visit(req: ParseVisitRequest, user_id: str = Depends(get_user_id)):
+    prompt = f"""You are a medical data extractor. Extract visit details from this text.
+Return ONLY a valid JSON object, no other text or markdown:
+{{
+  "patientName": "...",
+  "patientAge": "...",
+  "reasonForVisit": "...",
+  "doctorName": "...",
+  "prescriptionDate": "YYYY-MM-DD",
+  "medicines": [
+    {{"drug_name":"...","dosage":"...","frequency":"...","duration":"...","notes":"..."}}
+  ]
+}}
+Use null for any unknown fields. Use YYYY-MM-DD format for date if found, otherwise null.
+Text:
+{req.text}"""
+
+    response = groq.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        max_tokens=2000,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    content = response.choices[0].message.content.replace("```json","").replace("```","").strip()
+    return json.loads(content)

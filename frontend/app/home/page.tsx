@@ -12,27 +12,30 @@ const CARDS = [
     title: 'Discharge Explainer',
     desc: 'Upload your summary and get a plain-language explanation in your language.',
     path: '/discharge',
-    grad: 'linear-gradient(135deg, rgba(255,90,95,0.25) 0%, rgba(255,90,95,0.05) 100%)',
-    border: 'rgba(255,90,95,0.3)',
+    grad: 'linear-gradient(135deg, rgba(255,90,95,0.18) 0%, rgba(255,90,95,0.03) 100%)',
+    border: 'rgba(255,90,95,0.25)',
     accent: '#FF5A5F',
+    glow: 'rgba(255,90,95,0.15)',
   },
   {
     icon: '🩺',
     title: 'Symptom Checker',
     desc: 'Describe how you\'re feeling and get guidance on what to do next.',
     path: '/symptom',
-    grad: 'linear-gradient(135deg, rgba(167,139,250,0.25) 0%, rgba(167,139,250,0.05) 100%)',
-    border: 'rgba(167,139,250,0.3)',
+    grad: 'linear-gradient(135deg, rgba(167,139,250,0.18) 0%, rgba(167,139,250,0.03) 100%)',
+    border: 'rgba(167,139,250,0.25)',
     accent: '#A78BFA',
+    glow: 'rgba(167,139,250,0.15)',
   },
   {
     icon: '💊',
     title: 'Prescription History',
     desc: 'View and manage your full prescription history over time.',
     path: '/prescriptions',
-    grad: 'linear-gradient(135deg, rgba(251,191,36,0.22) 0%, rgba(251,191,36,0.04) 100%)',
-    border: 'rgba(251,191,36,0.3)',
+    grad: 'linear-gradient(135deg, rgba(251,191,36,0.18) 0%, rgba(251,191,36,0.03) 100%)',
+    border: 'rgba(251,191,36,0.25)',
     accent: '#FBBF24',
+    glow: 'rgba(251,191,36,0.12)',
   },
 ]
 
@@ -93,22 +96,32 @@ export default function HomePage() {
               </div>
             </div>
 
-            <button
+            <div
               onClick={() => router.push('/profile')}
-              title="Profile"
-              style={{
-                width: '38px', height: '38px', borderRadius: '50%',
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(255,255,255,0.15)',
-                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'rgba(255,255,255,0.8)', transition: 'all 0.2s',
-              }}
+              style={{ position: 'relative', cursor: 'pointer' }}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="7" r="4" />
-                <path d="M4 21v-1a8 8 0 0116 0v1" />
-              </svg>
-            </button>
+              <div style={{
+                width: '42px', height: '42px', borderRadius: '50%',
+                background: 'rgba(255,255,255,0.08)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'rgba(255,255,255,0.85)', transition: 'all 0.2s',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+              }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="7" r="4" />
+                  <path d="M4 21v-1a8 8 0 0116 0v1" />
+                </svg>
+              </div>
+              {/* Online indicator */}
+              <div style={{
+                position: 'absolute', bottom: '1px', right: '1px',
+                width: '10px', height: '10px', borderRadius: '50%',
+                background: '#34D399', border: '2px solid #0F0C29',
+                boxShadow: '0 0 8px rgba(52,211,153,0.5)'
+              }} />
+            </div>
           </div>
 
           {/* Header row: recovery badge + floating notif when scrolled */}
@@ -155,33 +168,52 @@ export default function HomePage() {
           {/* Next medication strip — hides when scrolled */}
           <div
             onClick={() => router.push('/reminders')}
+            className={nextMed ? 'pulsing' : ''}
             style={{
-              background: 'rgba(255,255,255,0.07)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderLeft: '3px solid #FF5A5F',
-              borderRadius: '14px', padding: '14px 16px',
+              background: 'rgba(255,255,255,0.04)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderLeft: `4px solid ${nextMed ? '#FF5A5F' : 'rgba(255,255,255,0.1)'}`,
+              borderRadius: '16px', padding: '16px 20px',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               cursor: 'pointer',
-              transition: 'opacity 0.35s ease, max-height 0.35s ease, margin 0.35s ease, padding 0.35s ease',
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
               opacity: scrolled ? 0 : 1,
-              maxHeight: scrolled ? '0px' : '80px',
+              maxHeight: scrolled ? '0px' : '100px',
               overflow: 'hidden',
-              marginBottom: scrolled ? '-12px' : '0',
+              marginBottom: scrolled ? '-12px' : '4px',
               pointerEvents: scrolled ? 'none' : 'auto',
+              boxShadow: nextMed ? '0 8px 24px rgba(255,90,95,0.12)' : 'none',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '1.1rem' }}>🔔</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{
+                width: '38px', height: '38px', borderRadius: '10px',
+                background: nextMed ? 'rgba(255, 90, 95, 0.12)' : 'rgba(255,255,255,0.05)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '1.2rem',
+                border: `1px solid ${nextMed ? 'rgba(255,90,95,0.2)' : 'rgba(255,255,255,0.08)'}`
+              }}>
+                🔔
+              </div>
               <div>
-                <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>Next medication due</div>
-                <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', marginTop: '2px' }}>
-                  {nextMed ? nextMed.drug_name : 'No reminders yet'}
+                <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#fff', letterSpacing: '-0.01em' }}>
+                  Next medication due
+                </div>
+                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.45)', marginTop: '2px', fontWeight: 500 }}>
+                  {nextMed ? nextMed.drug_name : 'All caught up for now'}
                 </div>
               </div>
             </div>
-            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)' }}>
+            <div style={{
+              fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem',
+              color: nextMed ? '#FF7B7F' : 'rgba(255,255,255,0.4)',
+              fontWeight: 600,
+              background: nextMed ? 'rgba(255,90,95,0.08)' : 'transparent',
+              padding: nextMed ? '4px 8px' : '0',
+              borderRadius: '6px'
+            }}>
               {nextMed ? nextMed.time_of_day?.slice(0, 5) : '—'}
             </div>
           </div>
@@ -194,23 +226,51 @@ export default function HomePage() {
               className="pressable"
               style={{
                 background: card.grad,
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
                 border: `1px solid ${card.border}`,
-                borderRadius: '16px', padding: '18px',
-                cursor: 'pointer', transition: 'transform 0.2s',
+                borderRadius: '20px', padding: '20px',
+                cursor: 'pointer', transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: `0 4px 20px ${card.glow}`,
+                position: 'relative',
+                overflow: 'hidden'
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-                <span style={{ fontSize: '1.5rem' }}>{card.icon}</span>
-                <div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'rgba(255,255,255,0.95)', marginBottom: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', position: 'relative', zIndex: 1 }}>
+                <div style={{
+                  width: '48px', height: '48px', borderRadius: '14px',
+                  background: 'rgba(255,255,255,0.05)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '1.6rem',
+                  border: '1px solid rgba(255,255,255,0.1)'
+                }}>
+                  {card.icon}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#fff', marginBottom: '4px', letterSpacing: '-0.02em' }}>
                     {card.title}
                   </div>
-                  <div style={{ fontSize: '0.73rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>
+                  <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.5, fontWeight: 500 }}>
                     {card.desc}
                   </div>
                 </div>
-                <div style={{ marginLeft: 'auto', fontSize: '1rem', color: card.accent, flexShrink: 0 }}>›</div>
+                <div style={{
+                  fontSize: '1.2rem',
+                  color: card.accent,
+                  flexShrink: 0,
+                  opacity: 0.8,
+                  transition: 'transform 0.2s ease'
+                }}>›</div>
               </div>
+              {/* Subtle background glow element */}
+              <div style={{
+                position: 'absolute', top: '-20%', right: '-10%',
+                width: '100px', height: '100px',
+                background: card.accent,
+                filter: 'blur(60px)',
+                opacity: 0.1,
+                pointerEvents: 'none'
+              }} />
             </div>
           ))}
         </div>

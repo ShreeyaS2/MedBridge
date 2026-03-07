@@ -16,7 +16,7 @@ const LANGS = [['en', 'English'], ['ta', 'தமிழ்'], ['hi', 'हिं�
 async function extractTextFromPdf(file: File): Promise<string> {
   // Dynamically import pdfjs-dist to keep bundle lean
   const pdfjsLib = await import('pdfjs-dist')
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`
 
   const arrayBuffer = await file.arrayBuffer()
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
@@ -161,7 +161,7 @@ export default function DischargePage() {
           >
             {loading
               ? <span style={{ width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} />
-              : 'Analyse ✦'}
+              : 'Analyse '}
           </button>
         </div>
 

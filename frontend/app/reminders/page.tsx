@@ -1,11 +1,14 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import BottomNav from '@/components/BottomNav'
 import ScreenHeader from '@/components/ScreenHeader'
 import { getReminders, addReminder, toggleReminder, deleteReminder } from '@/lib/api'
 import { getProfile } from '@/lib/auth'
 
 export default function RemindersPage() {
+  const router = useRouter()
+  const apptDateRef = useRef<HTMLInputElement>(null)
   const [reminders, setReminders] = useState<any[]>([])
   const [profile, setProfile] = useState<any>(null)
   const [drug, setDrug] = useState('')
@@ -18,9 +21,18 @@ export default function RemindersPage() {
   const [apptLocation, setApptLocation] = useState('')
   const [apptTime, setApptTime] = useState('10:00')
 
-  // Set default apptDate to today's date
   const todayString = new Date().toISOString().split('T')[0]
   const [apptDate, setApptDate] = useState(todayString)
+
+  const formatToDDMMYY = (dateStr: string) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yy = String(d.getFullYear()).slice(-2);
+    return `${dd}/${mm}/${yy}`;
+  };
 
   // Custom Deletion State
   const [isDeleting, setIsDeleting] = useState(false)
@@ -214,7 +226,13 @@ export default function RemindersPage() {
                     {r.dose} {/* Dose is used for the location string */}
                   </div>
                   <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', marginTop: '4px' }}>
-                    {r.date === todayString ? 'Today' : new Date(r.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} at <span style={{ color: r.is_done ? '#00C9A7' : '#FF7B7F', fontWeight: 600 }}>{r.time_of_day?.slice(0, 5)}</span>
+                    {r.date === todayString ? 'Today' : (() => {
+                      const d = new Date(r.date);
+                      const dd = String(d.getDate()).padStart(2, '0');
+                      const mm = String(d.getMonth() + 1).padStart(2, '0');
+                      const yy = String(d.getFullYear()).slice(-2);
+                      return `${dd}/${mm}/${yy}`;
+                    })()} at <span style={{ color: r.is_done ? '#00C9A7' : '#FF7B7F', fontWeight: 600 }}>{r.time_of_day?.slice(0, 5)}</span>
                   </div>
                 </div>
 
@@ -234,40 +252,39 @@ export default function RemindersPage() {
                     {r.is_done ? 'Completed' : 'Upcoming'}
                   </div>
 
-                  <button
-                    onClick={() => toggle(r.id, r.is_done)}
-                    style={{
-                      marginTop: '4px',
-                      background: 'transparent',
-                      border: '1px solid rgba(255,255,255,0.2)',
-                      color: 'rgba(255,255,255,0.7)',
-                      padding: '4px 10px',
-                      borderRadius: '8px',
-                      fontSize: '0.7rem',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Mark {r.is_done ? 'Not Done' : 'Done'}
-                  </button>
-                  <button
-                    onClick={() => remove(r.id)}
-                    style={{
-                      marginTop: '4px',
-                      background: 'rgba(255,90,95,0.1)',
-                      border: '1px solid rgba(255,90,95,0.2)',
-                      color: '#FF7B7F',
-                      padding: '4px 10px',
-                      borderRadius: '8px',
-                      fontSize: '0.7rem',
-                      cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', gap: '4px'
-                    }}
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6" />
-                    </svg>
-                    Delete
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div
+                      onClick={() => toggle(r.id, r.is_done)}
+                      style={{
+                        width: '26px', height: '26px', borderRadius: '50%',
+                        border: `2px solid ${r.is_done ? '#00C9A7' : 'rgba(255,255,255,0.2)'}`,
+                        background: r.is_done ? '#00C9A7' : 'transparent',
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '0.72rem', color: '#fff', flexShrink: 0,
+                        boxShadow: r.is_done ? '0 0 10px rgba(0,201,167,0.4)' : 'none',
+                        transition: 'all 0.2s',
+                        marginTop: '4px'
+                      }}
+                    >{r.is_done ? '✓' : ''}</div>
+
+                    <button
+                      onClick={() => remove(r.id)}
+                      style={{
+                        marginTop: '4px',
+                        background: 'rgba(255,90,95,0.1)',
+                        border: '1px solid rgba(255,90,95,0.2)',
+                        color: '#FF7B7F',
+                        width: '26px', height: '26px', borderRadius: '8px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer', fontSize: '0.8rem',
+                      }}
+                      title="Delete"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -345,12 +362,40 @@ export default function RemindersPage() {
 
             <div style={{ marginBottom: '16px' }}>
               <label style={LBL}>Date</label>
-              <input
-                style={{ ...INP, colorScheme: 'dark' }}
-                type="date"
-                value={apptDate}
-                onChange={e => setApptDate(e.target.value)}
-              />
+              <div
+                style={{ position: 'relative', cursor: 'pointer' }}
+                onClick={() => {
+                  try {
+                    apptDateRef.current?.showPicker()
+                  } catch (e) {
+                    // Fallback for older browsers
+                    apptDateRef.current?.click()
+                  }
+                }}
+              >
+                <input
+                  style={INP}
+                  type="text"
+                  readOnly
+                  value={formatToDDMMYY(apptDate)}
+                />
+                <input
+                  ref={apptDateRef}
+                  type="date"
+                  style={{
+                    position: 'absolute',
+                    opacity: 0,
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    cursor: 'pointer',
+                    colorScheme: 'dark',
+                    pointerEvents: 'none' // Let the container handle the click
+                  }}
+                  value={apptDate}
+                  onChange={e => setApptDate(e.target.value)}
+                />
+              </div>
             </div>
 
             <div style={{ marginBottom: '16px' }}>
