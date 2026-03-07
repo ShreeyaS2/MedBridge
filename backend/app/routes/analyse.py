@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from app.config import anthropic, supabase
+from app.config import groq, supabase
 from app.auth import get_user_id
 import json
 
@@ -23,12 +23,12 @@ async def analyse(req: AnalyseRequest, user_id: str = Depends(get_user_id)):
 Return ONLY JSON: {{"what_happened":"...","home_care":"...","warning_signs":"...","follow_up":"..."}}
 Discharge summary: {req.text}"""
 
-    response = anthropic.messages.create(
-        model="claude-sonnet-4-20250514",
+    response = groq.chat.completions.create(
+        model="llama-3.3-70b-versatile",
         max_tokens=1000,
         messages=[{"role": "user", "content": prompt}]
     )
-    result = json.loads(response.content[0].text.replace("```json","").replace("```","").strip())
+    result = json.loads(response.choices[0].message.content.replace("```json","").replace("```","").strip())
 
     supabase.table("discharge_analyses").insert({
         "user_id": user_id,
@@ -60,12 +60,12 @@ Return ONLY a JSON array, no other text:
 [{{"drug_name":"...","dosage":"...","frequency":"...","duration":"...","notes":"..."}}]
 If a field is unknown, use null. Discharge summary: {req.text}"""
 
-    rx_response = anthropic.messages.create(
-        model="claude-sonnet-4-20250514",
+    rx_response = groq.chat.completions.create(
+        model="llama3-70b-8192",
         max_tokens=1000,
         messages=[{"role": "user", "content": rx_prompt}]
     )
-    prescriptions = json.loads(rx_response.content[0].text.replace("```json","").replace("```","").strip())
+    prescriptions = json.loads(rx_response.choices[0].message.content.replace("```json","").replace("```","").strip())
 
     rows = [{"user_id": user_id, "drug_name": p.get("drug_name"), "dosage": p.get("dosage"),
              "frequency": p.get("frequency"), "duration": p.get("duration"),
@@ -73,3 +73,13 @@ If a field is unknown, use null. Discharge summary: {req.text}"""
             for p in prescriptions]
     supabase.table("prescriptions").insert(rows).execute()
     return {"saved": len(rows)}
+
+
+@router.delete("/prescriptions/{id}")
+async def delete_prescription(id: str, user_id: str = Depends(get_user_id)):
+    supabase.table("prescriptions") \
+        .delete() \
+        .eq("id", id) \
+        .eq("user_id", user_id) \
+        .execute()
+    return {"deleted": id}

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from app.config import anthropic, supabase
+from app.config import groq, supabase
 from app.auth import get_user_id
 import json
 
@@ -17,12 +17,12 @@ Patient reports: "{req.symptom}"
 Classify: SAFE, MONITOR, or URGENT.
 Return ONLY JSON: {{"classification":"SAFE"|"MONITOR"|"URGENT","explanation":"2-3 sentences","action":"one sentence"}}"""
 
-    response = anthropic.messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=400,
+    response = groq.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        max_tokens=600,
         messages=[{"role": "user", "content": prompt}]
     )
-    result = json.loads(response.content[0].text.replace("```json","").replace("```","").strip())
+    return json.loads(response.choices[0].message.content.replace("```json","").replace("```","").strip())
 
     supabase.table("symptom_logs").insert({
         "user_id": user_id,

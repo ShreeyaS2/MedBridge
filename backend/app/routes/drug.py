@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from app.config import anthropic
+from app.config import groq
 from app.auth import get_user_id
 import json
 
@@ -15,9 +15,9 @@ async def drug_lookup(req: DrugRequest, user_id: str = Depends(get_user_id)):
 Return ONLY JSON:
 {{"generic_name":"...","what_for":"...","how_to_take":"...","side_effects":"...","avoid":"..."}}"""
 
-    response = anthropic.messages.create(
-        model="claude-sonnet-4-20250514",
+    response = groq.chat.completions.create(
+        model="llama-3.3-70b-versatile",
         max_tokens=600,
         messages=[{"role": "user", "content": prompt}]
     )
-    return json.loads(response.content[0].text.replace("```json","").replace("```","").strip())
+    return json.loads(response.choices[0].message.content.replace("```json","").replace("```","").strip())

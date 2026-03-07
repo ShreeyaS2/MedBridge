@@ -1,13 +1,13 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-from anthropic import Anthropic
+from groq import Groq
 from supabase import create_client
 from twilio.rest import Client as TwilioClient
 
 load_dotenv()
 
-anthropic = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+groq = Groq(api_key=os.getenv("GROQ_API_KEY"))
 supabase  = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_KEY"))
 
 # Only init Twilio if keys exist
